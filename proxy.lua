@@ -226,14 +226,14 @@ end)
 
 AddHook("OnVarlist", "Evil_DropDialogBlock", function(var)
     if var[0] == "OnDialogRequest" then
-        local dialog = var[1] or ""
+        local dialog = (var[1] or ""):lower() -- bikin lowercase semua
         if lastDropCommand and (
-            dialog:find("Drop World Lock")
-            or dialog:find("Drop Diamond Lock")
-            or dialog:find("Drop Blue Gem Lock")
+            dialog:find("drop world lock")
+            or dialog:find("drop diamond lock")
+            or dialog:find("drop blue gem lock")
         ) then
             lastDropCommand = nil
-            return true
+            return true -- blokir dialog sepenuhnya
         end
     end
 end)
@@ -243,3 +243,4 @@ end)
 ----------------------------------------------------------
 Utils.console("`cProxy by Evil x ChatGPT Loaded!")
 sendVariant({[0] = "OnDialogRequest", [1] = UI.dialog})
+
