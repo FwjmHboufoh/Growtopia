@@ -213,28 +213,32 @@ end)
 local lastDropCommand = nil
 
 AddHook("OnTextPacket", "Evil_DropCommandTrack", function(type, packet)
-    if packet:find("action|input\n|text|/wd") then
+    local text = packet:lower()
+    if text:find("action|input\n|text|/wd") then
         lastDropCommand = "wd"
-    elseif packet:find("action|input\n|text|/dd") then
+    elseif text:find("action|input\n|text|/dd") then
         lastDropCommand = "dd"
-    elseif packet:find("action|input\n|text|/bg") then
+    elseif text:find("action|input\n|text|/bg") then
         lastDropCommand = "bg"
-    elseif packet:find("action|input\n|text|/daw") then
+    elseif text:find("action|input\n|text|/daw") then
         lastDropCommand = "daw"
     end
 end)
 
 AddHook("OnVarlist", "Evil_DropDialogBlock", function(var)
-    if var[0] == "OnDialogRequest" then
-        local dialog = (var[1] or ""):lower() -- bikin lowercase semua
-        if lastDropCommand and (
-            dialog:find("drop world lock")
-            or dialog:find("drop diamond lock")
-            or dialog:find("drop blue gem lock")
-        ) then
-            lastDropCommand = nil
-            return true -- blokir dialog sepenuhnya
-        end
+    if var[0] ~= "OnDialogRequest" then return end
+
+    local dialog = (var[1] or ""):lower()
+
+    -- blok semua dialog drop yang dikirim server
+    if lastDropCommand and (
+        dialog:find("drop world lock")
+        or dialog:find("drop diamond lock")
+        or dialog:find("drop blue gem lock")
+        or dialog:find("drop_item")
+    ) then
+        lastDropCommand = nil
+        return true
     end
 end)
 
@@ -243,4 +247,3 @@ end)
 ----------------------------------------------------------
 Utils.console("`cProxy by Evil x ChatGPT Loaded!")
 sendVariant({[0] = "OnDialogRequest", [1] = UI.dialog})
-
