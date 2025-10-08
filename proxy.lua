@@ -1,3 +1,7 @@
+----------------------------------------------------------
+-- [ Proxy By Evil x ChatGPT ] - Inline Modular Version
+-- Safe for sandbox environment (no require)
+----------------------------------------------------------
 
 --=== [ MODULE: UI ] ===--
 local UI = {}
@@ -38,8 +42,6 @@ add_label_with_icon|small|`w/daw``  Drop All Locks|left|482|
 add_spacer|small|
 add_label_with_icon|big|`bWin/Pos Commands``|left|7188|
 add_spacer|small|
-add_label_with_icon|small|`w/w1``  Drop Lock to Winner 1 (`4Soon``)|left|482|
-add_label_with_icon|small|`w/w2``  Drop Lock to Winner 2 (`4Soon``)|left|482|
 add_label_with_icon|small|`w/p1``  Mark Player 1 (Left Room)|left|482|
 add_label_with_icon|small|`w/p2``  Mark Player 2 (Right Room)|left|482|
 add_label_with_icon|small|`w/take``  Take Bets (`cp1`` + `cp2``)|left|482|
@@ -52,28 +54,17 @@ set_border_color|0,191,255,255
 set_bg_color|15,15,25,230
 add_label_with_icon|big|`9Advanced Menu``|left|14788|
 add_spacer|small|
-
--- Actions
 add_label_with_icon|small|`bActions``|left|7188|
 add_label_with_icon|small|`wTake``  Take Bet|left|6140|
-add_label_with_icon|small|`w1``  Drop To Winner 1 (Soon)|left|7188|
-add_label_with_icon|small|`w2``  Drop To Winner 2 (Soon)|left|7188|
 add_label_with_icon|small|`wrench``  Wrench Mode (Soon)|left|32|
 add_spacer|small|
-
--- Utilities
 add_label_with_icon|small|`bUtilities``|left|7188|
 add_label_with_icon|small|`p1``  Save Pos1 (Left)|left|1422|
 add_label_with_icon|small|`p2``  Save Pos2 (Right)|left|1422|
-add_label_with_icon|small|`slog``  Save Log (Soon)|left|758|
 add_spacer|small|
-
--- Navigation
 add_label_with_icon|small|`bNavigation``|left|7188|
 add_custom_button|wh|textLabel:`c                  home                  ;middle_colour:255;border_colour:0,191,255;display:block;|
 add_spacer|small|
-
--- Done Button
 add_custom_button|done|textLabel:`c                  Done                  ;middle_colour:255;border_colour:0,191,255;display:block;|
 ]]
 
@@ -119,8 +110,8 @@ function Logic.collect()
 end
 
 
---=== [ MODULE: HOOKS ] ===--
-AddHook("onTextPacket", "Evil_onText", function(type, packet)
+--=== [ MODULE: HOOKS - UI ] ===--
+AddHook("onTextPacket", "Evil_UIHook", function(type, packet)
 
     if packet:find("action|friends") then
         sendVariant({[0] = "OnDialogRequest", [1] = UI.advMenu})
@@ -128,29 +119,27 @@ AddHook("onTextPacket", "Evil_onText", function(type, packet)
 
     if packet:find("buttonClicked|next0") then
         sendVariant({[0] = "OnDialogRequest", [1] = UI.menu})
-        Utils.console("`cNext  Menu Opened")
+        Utils.console("`cNext Menu Opened")
         return true
     end
 
     if packet:find("buttonClicked|next1") then
         sendVariant({[0] = "OnDialogRequest", [1] = UI.advMenu})
-        Utils.console("`cNext  Advanced Menu Opened")
+        Utils.console("`cAdvanced Menu Opened")
         return true
     end
 
     if packet:find("buttonClicked|wh") then
         sendVariant({[0] = "OnDialogRequest", [1] = UI.dialog})
-        Utils.console("`cBack  Dialog Opened")
+        Utils.console("`cBack to Home")
         return true
     end
 
     if packet:find("buttonClicked|done") then
         sendPacket(2, "action|dialog_return\ndialog_name|close\n")
-        Utils.console("`cDialog closed successfully.")
+        Utils.console("`cDialog Closed")
         return true
     end
-
-    --=== Akhir Tombol NEXT ===--
 
     if packet:find("buttonClicked|p1") or packet:find("/p1") then
         p1x, p1y = getLocal().pos.x // 32, getLocal().pos.y // 32
@@ -169,21 +158,31 @@ AddHook("onTextPacket", "Evil_onText", function(type, packet)
         Utils.console("`cCollecting Bets")
     end
 
-    if packet:find("/menu") or packet:find("buttonClicked|menu") then
+    if packet:find("/menu") then
         sendVariant({[0] = "OnDialogRequest", [1] = UI.menu})
         Utils.console("`cMenu Opened")
     end
+end)
+
+
+--=== [ MODULE: HOOKS - DROP ] ===--
+AddHook("onTextPacket", "Evil_DropHook", function(type, packet)
 
     if packet:find("/daw") then
         Utils.dropItem(7188, Utils.checkitm(7188))
         Utils.dropItem(1796, Utils.checkitm(1796))
         Utils.dropItem(242, Utils.checkitm(242))
+        sleep(300)
+        sendPacket(2, "action|dialog_return\ndialog_name|close\n")
+        Utils.console("`cAll locks dropped and dialog closed.")
         return true
     end
 
     if packet:find("/dd (%d+)") then
         local txt = packet:match("action|input\n|text|/dd (%d+)")
         Utils.dropItem(1796, txt)
+        sleep(300)
+        sendPacket(2, "action|dialog_return\ndialog_name|close\n")
         Utils.console("Succes Drop `0"..txt.." `2Diamond Lock")
         return true
     end
@@ -191,6 +190,8 @@ AddHook("onTextPacket", "Evil_onText", function(type, packet)
     if packet:find("/wd (%d+)") then
         local txt = packet:match("action|input\n|text|/wd (%d+)")
         Utils.dropItem(242, txt)
+        sleep(300)
+        sendPacket(2, "action|dialog_return\ndialog_name|close\n")
         Utils.console("Succes Drop `0"..txt.." `2World Lock")
         return true
     end
@@ -198,10 +199,13 @@ AddHook("onTextPacket", "Evil_onText", function(type, packet)
     if packet:find("/bg (%d+)") then
         local txt = packet:match("action|input\n|text|/bg (%d+)")
         Utils.dropItem(7188, txt)
+        sleep(300)
+        sendPacket(2, "action|dialog_return\ndialog_name|close\n")
         Utils.console("Succes Drop `0"..txt.." `2Blue Gem Lock")
         return true
     end
 end)
+
 
 --=== [ MAIN INIT ] ===--
 Utils.console("`cProxy by Evil x ChatGPT Loaded!")
